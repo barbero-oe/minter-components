@@ -1,0 +1,11 @@
+{
+  "name": "minter-components",
+  "version": "0.0.0",
+  "description": "Minter components",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "barbero-oe",
+  "license": "ISC"
+}
