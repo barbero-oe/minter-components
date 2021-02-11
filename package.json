@@ -1,11 +1,8 @@
 {
   "name": "minter-components",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Minter components",
   "main": "src/index.ts",
-  "scripts": {
-    "test": "jest"
-  },
-  "author": "barbero-oe",
-  "license": "ISC"
+  "author": "Ezequiel Barbero",
+  "license": "MIT"
 }
