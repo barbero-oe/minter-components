@@ -1,0 +1,21 @@
+{
+    "include": ["src/**/*", "tests/**/*"],
+    "compilerOptions": {
+        "allowJs": false,
+        "downlevelIteration": true,
+        "importHelpers": true,
+        "jsx": "react-jsx",
+        "lib": ["ESNext", "DOM"],
+        "module": "ESNext",
+        "outDir": "dist",
+        "removeComments": true,
+        "sourceMap": true,
+        "target": "ES6",
+        "strict": true,
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": "./src",
+        "esModuleInterop": true,
+        "moduleResolution": "node"
+    }
+}
+
