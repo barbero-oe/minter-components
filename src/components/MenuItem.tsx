@@ -18,13 +18,13 @@ export interface MenuItemProps {
 
 const Item = styled.a<Selectable>(({selected}) => ({
     borderLeft: '4px solid ' + (selected ? 'var(--highlight)' : 'transparent'),
-    color: selected ? 'var(--main-text)' : 'var(--second)',
+    color: selected ? 'var(--main)' : 'var(--second)',
     paddingLeft: '1em',
     display: 'inline-flex',
     alignItems: 'center',
     cursor: 'default',
     '&:hover': {
-        color: 'var(--main-text)',
+        color: 'var(--main)',
     },
 }))
 
