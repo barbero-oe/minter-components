@@ -1,53 +1,63 @@
 import React, {useEffect, useRef, useState} from 'react'
 import styled from '@emotion/styled'
 
-export const Slider: React.FC<SliderProps> = ({position, update}) => {
-    const [isMoving, setMoving] = useState(false)
-    const component = useRef<HTMLDivElement>(null)
-    const [currentPosition, setCurrentPosition] = useState(0)
-    const percentage = (isMoving ? currentPosition : position) * 100 + '%'
-    useMouseToMove(isMoving, component, setCurrentPosition, setMoving, update)
+
+export const Slider: React.FC<SliderProps> = ({position, onSelect, onMove}) => {
+    const {component, isPressed, press} = useSliderMovement(onMove, onSelect)
+    const percentage = position * 100 + '%'
     return (
-        <Wrapper ref={component}
-                 onClick={handleClick(update)}
-                 onMouseDown={() => setMoving(true)}>
+        <Wrapper ref={component} onMouseDown={() => press(true)}>
             <ProgressBarBackground>
-                <ProgressBar style={{width: percentage}} moving={isMoving}/>
-                <Dot style={{left: `calc(${percentage} - 6px`}} moving={isMoving}/>
+                <ProgressBar style={{width: percentage}} moving={isPressed}/>
+                <Dot style={{left: `calc(${percentage} - 6px`}} moving={isPressed}/>
             </ProgressBarBackground>
         </Wrapper>)
 }
 
 export interface SliderProps {
     position: number
-    update: UpdatePosition
+    onSelect: UpdatePosition
+    onMove: UpdatePosition
 }
 
 type UpdatePosition = (position: number) => void
 
-function useMouseToMove(isMoving: boolean,
-                        component: React.MutableRefObject<HTMLDivElement | null>,
-                        setCurrentPosition: UpdatePosition,
-                        setMoving: (value: boolean) => void,
-                        update: UpdatePosition) {
+function useSliderMovement(onMove: (position: number) => void, onSelect: (position: number) => void) {
+    const component = useRef<HTMLDivElement>(null)
+    const [isPressed, press] = useState(false)
+    useMouseMove(isPressed, component, onMove)
+    useMouseUp(isPressed, press, component, onSelect)
+    return {component, isPressed, press}
+}
+
+function useMouseMove(isPressed: boolean,
+                      component: React.MutableRefObject<HTMLDivElement | null>,
+                      onMove: UpdatePosition) {
     useEffect(() => {
+        if (!isPressed) return
         const mousemove = (e: MouseEvent) => {
-            if (!isMoving) return
-            updateUserPosition(e, component, setCurrentPosition)
-        }
-        const mouseup = (e: MouseEvent) => {
-            if (!isMoving) return
-            setMoving(false)
-            updateUserPosition(e, component, update)
+            updateUserPosition(e, component, onMove)
         }
         document.addEventListener('mousemove', mousemove)
-        document.addEventListener('mouseup', mouseup)
-        return () => {
-            document.removeEventListener('mousemove', mousemove)
-            document.removeEventListener('mouseup', mouseup)
-        }
-    }, [setCurrentPosition, component, isMoving, setMoving, update])
+        return () => document.removeEventListener('mousemove', mousemove)
+    }, [isPressed, onMove])
 }
+
+function useMouseUp(isPressed: boolean,
+                    press: (value: boolean) => void,
+                    component: React.MutableRefObject<HTMLDivElement | null>,
+                    onSelect: UpdatePosition) {
+    useEffect(() => {
+        if (!isPressed) return
+        const mouseup = (e: MouseEvent) => {
+            press(false)
+            updateUserPosition(e, component, onSelect)
+        }
+        document.addEventListener('mouseup', mouseup)
+        return () => document.removeEventListener('mouseup', mouseup)
+    }, [isPressed, onSelect])
+}
+
 
 function updateUserPosition(e: MouseEvent,
                             component: React.MutableRefObject<HTMLDivElement | null>,
@@ -58,69 +68,55 @@ function updateUserPosition(e: MouseEvent,
     update(calculatePosition(e.clientX, rect))
 }
 
-function handleClick(update: UpdatePosition): (e: React.MouseEvent<HTMLDivElement>) => void {
-    return (e: React.MouseEvent<HTMLDivElement>) => {
-        if (e.button !== MouseButtons.Main) return
-        const newPosition = calculatePosition(e.clientX, e.currentTarget.getBoundingClientRect())
-        update(newPosition)
-    }
-}
-
-
 function calculatePosition(clientX: number, dimensions: DOMRect): number {
     const position = (clientX - dimensions.x) / dimensions.width
     const maxBound = Math.min(1, position)
     return Math.max(0, maxBound)
 }
 
-enum MouseButtons {
-    Main,
-    Auxiliary,
-    Secondary,
-    Fourth,
-    Fifth
-}
+const Wrapper = styled.div`
+  height: 24px;
 
-const Wrapper = styled.div({
-    height: '24px',
-    '&:hover > div > div': {
-        border: '2px solid var(--highlight)',
-        background: 'var(--highlight)',
-    },
-    '&:hover > div > span': {
-        visibility: 'visible',
-    },
-    '&:active > div > span': {
-        boxShadow: '1px 1px 3px 0px var(--third) inset',
-    },
-})
+  &:hover > div > div {
+    border: 2px solid var(--highlight);
+    background: var(--highlight);
+  }
 
-const ProgressBarBackground = styled.div({
-    border: '2px solid var(--third)',
-    borderRadius: '2px',
-    background: 'var(--third)',
-    position: 'relative',
-    top: 'calc(50% - 2px)',
-})
+  &:hover > div > span {
+    visibility: visible;
+  }
 
-const ProgressBar = styled.div<{ moving: boolean }>(({moving}) => ({
-    border: moving ? '2px solid var(--highlight)' : '2px solid var(--second)',
-    borderRadius: '2px',
-    background: moving ? 'var(--highlight)' : 'var(--second)',
-    position: 'absolute',
-    top: '-2px',
-    left: '-2px',
-}))
+  &:active > div > span {
+    box-shadow: 1px 1px 3px 0 var(--third) inset;
+  }
+`
 
-const Dot = styled.span<{ moving: boolean }>(({moving}) => ({
-    border: '3px solid var(--main)',
-    borderRadius: '6px',
-    display: 'inline-block',
-    position: 'absolute',
-    top: '-6px',
-    visibility: moving ? 'visible' : 'hidden',
-    width: '6px',
-    height: '6px',
-    background: 'var(--main)',
-    boxShadow: moving ? '1px 1px 3px 0px var(--third) inset' : 'unset',
-}))
+const ProgressBarBackground = styled.div`
+  border: 2px solid var(--third);
+  border-radius: 2px;
+  background: var(--third);
+  position: relative;
+  top: calc(50% - 2px);
+`
+
+const ProgressBar = styled.div<{ moving: boolean }>`
+  border: 2px solid ${({moving}) => moving ? 'var(--highlight)' : 'var(--second)'};
+  border-radius: 2px;
+  background: ${({moving}) => moving ? 'var(--highlight)' : 'var(--second)'};
+  position: absolute;
+  top: -2px;
+  left: -2px;
+`
+
+const Dot = styled.span<{ moving: boolean }>`
+  border: 3px solid var(--main);
+  border-radius: 6px;
+  display: inline-block;
+  position: absolute;
+  top: -6px;
+  visibility: ${({moving}) => moving ? 'visible' : 'hidden'};
+  width: 6px;
+  height: 6px;
+  background: var(--main);
+  box-shadow: ${({moving}) => moving ? '1px 1px 3px 0px var(--third) inset' : 'unset'};
+`
