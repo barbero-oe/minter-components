@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
+    "@fortawesome/fontawesome-free": "^5.15.2",
     "@rollup/plugin-typescript": "^8.1.1",
     "@storybook/addon-actions": "^6.1.17",
     "@storybook/addon-essentials": "^6.1.17",
