@@ -1,11 +1,19 @@
-import React from 'react'
+import React, {useState} from 'react'
 import styled from '@emotion/styled'
 
-export const ComboBox: React.FC<ComboProps> = ({options}) => {
+export const ComboBox: React.FC<ComboProps> = ({options, onChange}) => {
+    const [current, setCurrent] = useState<string>()
+    const select = (option: Option) => {
+        setCurrent(option.display)
+        onChange(option.value)
+    }
     return (
         <CustomSelect role="combobox">
-            <Input readOnly={true} placeholder="Select an item"/>
-            <Options options={options}/>
+            <Input readOnly={true}
+                   onChange={() => ({})}
+                   value={current}
+                   placeholder="Select an item"/>
+            <Options options={options} onChange={select}/>
         </CustomSelect>)
 }
 
@@ -28,7 +36,7 @@ export const CustomSelect = styled.label`
   width: 25ch;
   position: relative;
 
-  &:focus, &:focus-within {
+  &:focus-within {
     border: 1px solid #158def;
   }
 
@@ -70,12 +78,40 @@ const Input = styled.input`
   padding-left: 1ch;
 `
 
-const Options: React.FC<OptionsProps> = ({options}) =>
-    <ul role="listbox">{options.map(({value, display}) =>
-        <li key={value} role="option">{display}</li>)}
-    </ul>
-
+const Options: React.FC<OptionsProps> = ({options, onChange}) => {
+    const [focused, setFocused] = useState('')
+    return (
+        <OptionList role="listbox">{options.map((option) =>
+            <Item focused={option.value === focused}
+                  onMouseEnter={() => setFocused(option.value)}
+                  onClick={() => onChange(option)}
+                  key={option.value}
+                  tabIndex={-1}
+                  role="option">{option.display}</Item>)}
+        </OptionList>)
+}
 
 interface OptionsProps {
     options: Option[]
+    onChange: (value: Option) => void
 }
+
+const OptionList = styled.ul`
+  display: block;
+  padding: 0.3em 0;
+  margin: 0.5em 0;
+  list-style: none;
+  background: #555555;
+  border-radius: 0.3em;
+`
+
+const Item = styled.li<ItemProps>`
+  padding: 0.5em 1ch;
+  margin: 0;
+  background: ${p => p.focused ? '#333333' : 'inherit'};
+`
+
+interface ItemProps {
+    focused: boolean
+}
+
