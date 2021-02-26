@@ -9,8 +9,14 @@ export const ComboBox: React.FC<ComboProps> = ({options}) => {
         </CustomSelect>)
 }
 
+export interface Option {
+    value: string
+    display: string
+}
+
 export interface ComboProps {
-    options: string[]
+    options: Option[]
+    onChange: (value: string) => void
 }
 
 export const CustomSelect = styled.label`
@@ -65,11 +71,11 @@ const Input = styled.input`
 `
 
 const Options: React.FC<OptionsProps> = ({options}) =>
-    <ul role="listbox">{options.map(option =>
-        <li key={option} role="option">{option}</li>)}
+    <ul role="listbox">{options.map(({value, display}) =>
+        <li key={value} role="option">{display}</li>)}
     </ul>
 
 
 interface OptionsProps {
-    options: string[]
+    options: Option[]
 }
