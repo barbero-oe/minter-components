@@ -10,4 +10,4 @@ export default {
 const Template: Story<ComboProps> = (args) => <ComboBox {...args} />
 
 export const Simple = Template.bind({})
-Simple.args = {}
+Simple.args = {options: ['Dolar', 'Peso', 'Rublo']}
